@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <!-- ===== FYLL INN DISSE TO LINJENE ===== -->
-<meta name="dropbox-app-key" content="r2epbg4euqbpxmh">
-<meta name="age-public-key" content="age1yn92fjymvh5d6n7h7t2rh7y3lpylxr0yry83rkndqmz349l4n5eswwgu4n">
+<meta name="dropbox-app-key" content="LIM_INN_DROPBOX_APP_KEY_HER">
+<meta name="age-public-key" content="LIM_INN_AGE_OFFENTLIG_NOKKEL_HER">
 <!-- ===================================== -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-krMAkSKfEaAdDyz/1feytSrqGh5wtBP7aowv2NBxPOU=' 'sha256-HQ7Lr41sa7t5CIxd0DbeI+6zlulr+gjsQAE4YPGVMkg='; style-src 'sha256-6WM1mUEUkgEITK0tlI+Srjd6foUvLIZq0tvgc9mugj8='; font-src data:; connect-src https://api.dropboxapi.com https://content.dropboxapi.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-krMAkSKfEaAdDyz/1feytSrqGh5wtBP7aowv2NBxPOU=' 'sha256-eK3CSVT+4wH3+Xdaf2BLNrVzKF/BEA0SBsCTMKfuGzM='; style-src 'sha256-MJMwgN0VX9lJ1j3UvqWI4m3yasLwPr8AXwRm2NHlnLg='; font-src data:; connect-src https://api.dropboxapi.com https://content.dropboxapi.com; base-uri 'none'; form-action 'none'">
 <title>Calvin</title>
 <style>@font-face {
   font-family: "VT323"; font-style: normal; font-weight: 400; font-display: block;
@@ -132,16 +132,22 @@ textarea::selection { background: var(--fg); color: var(--bg); }
   .page { padding: 44px 32px 56px; font-size: 15.5px; margin-top: 0; box-shadow: none; min-height: 0; }
 }
 
-/* Utskrift: bare boksiden */
+/* Utskrift: en egen, enkel kopi av boksiden i vanlig flyt, så alle nettlesere deler den i sider */
+#printout { display: none; }
+@page { size: A4; margin: 32mm 50mm 38mm; }
+@page { @bottom-center { content: counter(page); font: 9pt "Iowan Old Style", Palatino, Georgia, serif; color: #444; } }
 @media print {
-  @page { size: A4; margin: 32mm 50mm 38mm;
-    @bottom-center { content: counter(page); font: 9pt "Iowan Old Style", Palatino, Georgia, serif; color: #444; } }
-  html, body { height: auto !important; overflow: visible !important; background: #fff !important; display: block; }
-  body > *:not(#preview) { display: none !important; }
-  #preview, #preview[hidden] { display: block !important; position: static; padding: 0; overflow: visible; background: none; }
-  .ptools { display: none !important; }
-  .page { max-width: none; min-height: 0; margin: 0; padding: 0; box-shadow: none; background: none; color: #000; font-size: 10.5pt; line-height: 1.45; }
-  .page h1, .page h2, .page h3 { break-after: avoid; }
+  html, body {
+    height: auto !important; min-height: 0 !important; overflow: visible !important;
+    display: block !important; position: static !important; background: #fff !important;
+  }
+  body > *:not(#printout) { display: none !important; }
+  #printout { display: block !important; position: static !important; }
+  #printout .page {
+    display: block; width: auto; max-width: none; min-height: 0; margin: 0; padding: 0;
+    box-shadow: none; background: none; color: #000; font-size: 10.5pt; line-height: 1.45; overflow: visible;
+  }
+  .page h1, .page h2, .page h3 { break-after: avoid; page-break-after: avoid; }
   .page p { orphans: 3; widows: 3; }
   .page code, .page pre { background: none; }
 }
@@ -178,6 +184,7 @@ textarea::selection { background: var(--fg); color: var(--bg); }
   </div>
   <article id="page" class="page" lang="nb"></article>
 </section>
+<div id="printout" aria-hidden="true"><article class="page" lang="nb"></article></div>
 <div class="status"><span id="msg"></span><span class="right"><span id="count"></span><span id="pos"></span></span></div>
 <div class="keys">
   <button id="save" type="button"><kbd id="savekey">⌘S</kbd>Lagre</button>
@@ -451,8 +458,12 @@ function togglePreview(force) {
   previewEl.hidden = !open;
   if (!open) textEl.focus();
 }
-function printPage() { renderPage(); window.print(); }
-window.addEventListener("beforeprint", renderPage);
+function preparePrint() {
+  renderPage();
+  document.querySelector("#printout .page").innerHTML = pageEl.innerHTML;
+}
+function printPage() { preparePrint(); window.print(); }
+window.addEventListener("beforeprint", preparePrint);
 $("previewbtn").addEventListener("click", () => togglePreview());
 $("printbtn").addEventListener("click", printPage);
 $("pprint").addEventListener("click", printPage);
